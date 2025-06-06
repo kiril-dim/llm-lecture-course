@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Large Language Models to AI Agents</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .header {
+            text-align: center;
+            background-color: #000000;
+            color: white;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+        .course-info {
+            background-color: #f8f8f8;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 3px solid #000000;
+        }
+        h2 {
+            color: #000000;
+            font-weight: 400;
+        }
+        .lectures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1px;
+            margin-bottom: 30px;
+            background-color: #cccccc;
+        }
+        .lecture-card {
+            background-color: #ffffff;
+            transition: background-color 0.2s;
+        }
+        .lecture-card:hover {
+            background-color: #f8f8f8;
+        }
+        .lecture-header {
+            background-color: #333333;
+            color: white;
+            padding: 15px 20px;
+        }
+        .lecture-number {
+            font-weight: 500;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .lecture-title {
+            font-size: 1.2em;
+            margin: 5px 0;
+            font-weight: 400;
+        }
+        .lecture-content {
+            padding: 20px;
+        }
+        .lecture-description {
+            color: #666666;
+            margin-bottom: 15px;
+        }
+        .lecture-link {
+            display: inline-block;
+            background-color: #000000;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+        .lecture-link:hover {
+            background-color: #333333;
+        }
+        .lecture-link.coming-soon {
+            background-color: #cccccc;
+            color: #666666;
+            cursor: not-allowed;
+        }
+        .resources {
+            background-color: #f8f8f8;
+            padding: 20px;
+            border-left: 3px solid #000000;
+        }
+        .resources h2 {
+            margin-top: 0;
+        }
+        .resources a {
+            color: #000000;
+            text-decoration: none;
+            border-bottom: 1px solid #cccccc;
+        }
+        .resources a:hover {
+            border-bottom-color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>From Large Language Models to AI Agents</h1>
+        <p>An applied view on modern NLP exploring the most recent advances</p>
+    </div>
+
+    <div class="course-info">
+        <h2>Course Information</h2>
+        <p><strong>Format:</strong> 3 Academic hours: 2 lecture + 1 exercise</p>
+        <p><strong>Prerequisites:</strong> 1st and 2nd year mathematics and computer science courses, basic probability, linear algebra, basic Python</p>
+        <p><strong>Examination:</strong> 60% final project + 40% written test</p>
+    </div>
+
+    <h2>Lectures</h2>
+    <div class="lectures-grid">
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 1</div>
+                <div class="lecture-title">Introduction to AI and ML</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Problem definition in ML. Definitions - labels, features, train, test and validation datasets. Supervised, unsupervised and reinforcement learning. Overfitting and underfitting. Metrics.
+                </div>
+                <a href="lectures/lecture-01-intro-ai-ml/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 2</div>
+                <div class="lecture-title">Language Models</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Meaning of word, computer representation. WordNet with synonyms and hypernyms. N-gram models and limitations, Word2Vec.
+                </div>
+                <a href="lectures/lecture-02-language-models/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 3</div>
+                <div class="lecture-title">Tokenization</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Dependency trees, BPE, unigram, char, word algorithms. Normalization, stemming.
+                </div>
+                <a href="lectures/lecture-03-tokenization/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 4</div>
+                <div class="lecture-title">Neural Networks</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Neurons. Layers. Forward pass. Activations. Back propagation. Gradient descent.
+                </div>
+                <a href="lectures/lecture-04-neural-networks/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 5</div>
+                <div class="lecture-title">Transformers</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Brief on RNNs and their issues. Attention. Transformer architecture. BERT.
+                </div>
+                <a href="lectures/lecture-05-transformers/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 6</div>
+                <div class="lecture-title">Pretraining</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Pretraining tasks. Masked language Models. Next token prediction. Datasets.
+                </div>
+                <a href="lectures/lecture-06-pretraining/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 7</div>
+                <div class="lecture-title">Scaling Laws and Large Models</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    More datasets. Improvements when increasing parameters and data. Few shot, zero shot learning. Enhanced contextual understanding.
+                </div>
+                <a href="lectures/lecture-07-scaling-laws/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 8</div>
+                <div class="lecture-title">Local LLMs</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Running Ollama, LLama.cpp. Quantization. Open source models.
+                </div>
+                <a href="lectures/lecture-08-local-llms/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 9</div>
+                <div class="lecture-title">Advanced Prompting</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Few shot prompting. Role playing. Chain of thought. Tree of thought.
+                </div>
+                <a href="lectures/lecture-09-advanced-prompting/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 10</div>
+                <div class="lecture-title">Hallucinations and RAG</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Lack of context. In context learning. Semantic search. Similarity search. Vector databases. ANN. Retrievers. Query reformulation. Retrieved document summarisation.
+                </div>
+                <a href="lectures/lecture-10-hallucinations-rag/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 11</div>
+                <div class="lecture-title">AI Agents and Tools</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Agents. Agent memory, tools, orchestration. Key results.
+                </div>
+                <a href="lectures/lecture-11-ai-agents-tools/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+
+        <div class="lecture-card">
+            <div class="lecture-header">
+                <div class="lecture-number">Lecture 12</div>
+                <div class="lecture-title">Project Preparation</div>
+            </div>
+            <div class="lecture-content">
+                <div class="lecture-description">
+                    Final project guidance and preparation.
+                </div>
+                <a href="lectures/lecture-12-project-prep/" class="lecture-link coming-soon">Coming Soon</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="resources">
+        <h2>Course Resources</h2>
+        <ul>
+            <li><a href="exercises/">Exercises</a> - Weekly exercises and solutions</li>
+            <li><a href="projects/">Projects</a> - Final project templates and examples</li>
+            <li><a href="resources/">Additional Resources</a> - Reading materials and datasets</li>
+        </ul>
+    </div>
+</body>
+</html>

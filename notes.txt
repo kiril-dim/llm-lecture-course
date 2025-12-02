@@ -1,0 +1,6 @@
+Stanford CS336 Lang. Modeling from Scratch
+video lecture course with very applied material 
+https://www.youtube.com/watch?v=ptFiH_bHnJw
+https://github.com/stanford-cs336/spring2024-lectures
+
+

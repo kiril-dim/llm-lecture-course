@@ -4,3 +4,11 @@ https://www.youtube.com/watch?v=ptFiH_bHnJw
 https://github.com/stanford-cs336/spring2024-lectures
 
 
+
+Ideas:
+  - simple statistical model to generate text
+  - tokenize a full on corpus and study the most common tokens
+  - is the amount of work similar per lecture
+  - add more images from popular sources explaining material more
+
+

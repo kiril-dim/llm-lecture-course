@@ -1,20 +1,20 @@
 Lecture 1: Introduction to AI and ML
-Problem definition in ML. Definitions - labels, features, train, test and validation datasets. Supervised, unsupervised and reinforcement learning. Overfitting and underfitting. Metrics.
+Problem definition in ML. Definitions - labels, features, train, test and validation datasets. Supervised, unsupervised and reinforcement learning. Overfitting and underfitting. Metrics. N-gram language models and their limitations.
 
-Lecture 2: Language models
-Meaning of word, computer representation. WordNet with synonyms and hypernyms. N-gram models and limitations, Word2Vec.
+Lecture 2: Neural Networks for NLP
+Neurons. Layers. Forward pass. Activations. Backpropagation. Gradient descent. Embedding layers - tokens as learned dense vectors. Text classification with neural networks.
 
 Lecture 3: Tokenization
-Dependency trees, BPE, unigram, char, word algorithms. Normalization, stemming…
+Why tokenization matters for embeddings and vocabulary. BPE, Unigram, WordPiece algorithms. Byte-level tokenization. Special tokens. Vocabulary size tradeoffs. Impact on sequence length and model efficiency.
 
-Lecture 4: Neural networks
-Neurons. Layers. Forward pass. Activations. Back propagation. Gradient descent.
+Lecture 4: Attention Mechanisms
+RNN limitations (sequential bottleneck, vanishing gradients). Self-attention from first principles. Query, Key, Value. Scaled dot-product attention. Multi-Head Attention. Positional encodings. Visualizing attention patterns.
 
-Lecture 5: Transformers
-Brief on RNNs and their issues. Attention. Transformer architecture. BERT.
+Lecture 5: Transformer Architecture and Long Context
+Full transformer block: attention + FFN + residuals + layer norm. Encoder vs Decoder architectures. Modern attention variants: MQA, GQA, Flash Attention. RoPE and position representations. Long context: sliding window, context extrapolation, KV cache efficiency. From 512 to 1M tokens.
 
-Lecture 6: Foundation Models
-Pretraining objectives. Masked language models. Next token prediction. Datasets at scale. Scaling laws.
+Lecture 6: Foundation Models and Pretraining Data
+Pretraining objectives: masked language models, next token prediction. Data sources: Common Crawl, books, code, scientific text. Dataset sizes and composition. Data quality: filtering, deduplication (MinHash, exact matching). Contamination detection. Scaling laws and compute-optimal training.
 
 Lecture 7: Emergent Capabilities at Scale
 Few-shot and zero-shot learning. In-context learning mechanics. Enhanced contextual understanding. What capabilities emerge and when. Reasoning capabilities that appear at scale.

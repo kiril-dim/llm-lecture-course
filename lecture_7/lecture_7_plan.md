@@ -2,8 +2,8 @@
 
 ## Course Information
 
-**Duration:** 2-2.5 hours  
-**Prerequisites:** Lecture 6 (Foundation Models, Scaling Laws)  
+**Duration:** 2-2.5 hours
+**Prerequisites:** Lecture 6 (Foundation Models, Pretraining Data, Scaling Laws)
 **Next Lecture:** Alignment and RLHF
 
 ---
@@ -14,7 +14,7 @@
 
 **Topics:**
 
-- Recap: Scaling laws from Lecture 6
+- Recap: Lecture 6 — scaling laws, data curation, training at scale
 - **Definition of emergence:**
   - Capabilities not explicitly trained for
   - Qualitative jumps, not just quantitative improvements

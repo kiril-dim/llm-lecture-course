@@ -2,25 +2,35 @@
 
 ## Course Information
 
-**Duration:** 2-2.5 hours  
-**Prerequisites:** Lecture 2 (Language models, word representations)  
-**Next Lecture:** Neural Networks
+**Duration:** 2-2.5 hours
+**Prerequisites:** Lecture 2 (Neural networks, embeddings)
+**Next Lecture:** Attention Mechanisms
 
 ---
 
 ## Lecture Outline
 
-### 1. Motivation: What is a "Word"? (10-15 min)
+### 1. Motivation: Why Tokenization Matters (10-15 min)
 
 **Topics:**
 
-- The tokenization problem: breaking text into units
-- Why this matters for embeddings and language models
-- **Challenges:**
+- Recap: In Lecture 2, we assumed simple word tokenization
+  - Built embeddings for "words"
+  - But what exactly is a word?
+- **The embedding layer problem:**
+  - `nn.Embedding(vocab_size, embed_dim)` — what is vocab_size?
+  - Every unique token needs an embedding vector
+  - Vocabulary directly affects model size
+- **Challenges we glossed over:**
   - Multi-word expressions: "New York", "ice cream"
   - Contractions: "don't", "I'm"
   - Compounds: "COVID-19", "state-of-the-art"
-  - Multilingual text and rare words
+  - Out-of-vocabulary words: misspellings, new terms, rare words
+  - Multilingual text
+- **Why this matters:**
+  - Tokenization determines what the model can "see"
+  - Affects sequence length, memory, and compute
+  - Bad tokenization → bad model
 - Preview: different solutions to the same problem
 
 ---
@@ -275,7 +285,13 @@
 - BPE: greedy, bottom-up, most common in modern LLMs
 - Unigram: probabilistic, top-down, alternative approach
 - Choice of tokenizer affects model performance and efficiency
-- **Next lecture:** How do we process these token sequences? Neural networks and embeddings
+- Vocabulary size directly affects embedding layer size
+
+**What's next:**
+
+- We have: tokens → embeddings → pooling → classifier
+- Problem: pooling loses word order and long-range dependencies
+- **Next lecture:** Attention mechanisms — how to process sequences while preserving order and relationships
 
 ---
 

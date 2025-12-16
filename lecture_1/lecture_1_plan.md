@@ -4,7 +4,7 @@
 
 **Duration:** 2-2.5 hours  
 **Prerequisites:** Basic programming (Python), linear algebra, probability  
-**Next Lecture:** Language Models and Word Representations
+**Next Lecture:** Neural Networks for NLP
 
 ---
 
@@ -92,15 +92,10 @@
 - Discovering themes in document collections
 - Example: clustering news articles
 
-**Word Embeddings (preview)**
-
-- Learning word representations from text
-- Foreshadowing: Word2Vec in Lecture 2
-
 **Language Modeling**
 
 - Learning text patterns without explicit labels
-- Preview: this is foundation of LLMs (Lectures 6-7)
+- Preview: this is foundation of LLMs (Lecture 6)
 
 #### **Reinforcement Learning**
 
@@ -142,7 +137,7 @@
 
 - **Token-level accuracy** (NER, POS tagging)
 - **BLEU score** (machine translation preview)
-- **Perplexity** (language models - Lecture 2)
+- **Perplexity** (language models - introduced later this lecture)
 
 #### **For Generation:**
 
@@ -151,26 +146,73 @@
 
 ---
 
-### 7. NLP-Specific Challenges Preview (10-15 min)
+### 7. N-gram Language Models and Their Limitations (20-25 min)
+
+**Topics:**
+
+#### **What is a language model?**
+
+- Assigns probability to sequences of words
+- Formal definition: $P(w_1, w_2, ..., w_n)$
+- Applications: speech recognition, machine translation, text generation
+
+#### **Probability of sequences:**
+
+- Chain rule: $P(w_1, ..., w_n) = \prod_{i=1}^{n} P(w_i | w_1, ..., w_{i-1})$
+- Problem: too many possible histories
+
+#### **N-gram approximation:**
+
+- Markov assumption: only look at last n-1 words
+- Unigram: $P(w_i)$
+- Bigram: $P(w_i | w_{i-1})$
+- Trigram: $P(w_i | w_{i-2}, w_{i-1})$
+
+#### **Estimating probabilities:**
+
+- Maximum likelihood estimation from corpus
+- Count and normalize: $P(w_i | w_{i-1}) = \frac{C(w_{i-1}, w_i)}{C(w_{i-1})}$
+- **Code example:** Build bigram model on text corpus
+
+#### **Evaluating with Perplexity:**
+
+- Intuition: how "surprised" is the model?
+- Definition: $PP(W) = P(w_1, ..., w_N)^{-1/N}$
+- Lower perplexity = better model
+- Standard metric for all language models (including LLMs)
+
+#### **Fundamental Limitations:**
+
+- **Sparsity:** zero counts for unseen n-grams
+- **No generalization:** "cat sat" and "dog sat" are unrelated
+- **No long-range dependencies:** can't capture context beyond n-1 words
+- **Storage:** need to store all n-gram counts
+- Smoothing helps but doesn't solve the core problem
+
+**Bridge:** These limitations motivate neural approaches
+
+---
+
+### 8. NLP-Specific Challenges Preview (10-15 min)
 
 **Topics:**
 
 - **Representing text numerically**
-  - Words → vectors (Lecture 2)
+  - Words → vectors (embeddings in Lecture 2)
   - Tokenization challenges (Lecture 3)
 - **Variable-length sequences**
   - Sentences have different lengths
-  - How do we handle this? (Neural networks - Lecture 4)
+  - How do we handle this? (Neural networks - Lecture 2)
 - **Context and meaning**
   - "I'm feeling blue" vs "The sky is blue"
-  - Preview: Transformers and attention (Lecture 5)
+  - Preview: Transformers and attention (Lecture 4-5)
 - **Scale and data**
   - Modern LLMs trained on trillions of tokens
-  - Preview: Scaling laws (Lecture 7)
+  - Preview: Scaling laws (Lecture 6)
 
 ---
 
-### 8. Practical NLP Workflow (10 min)
+### 9. Practical NLP Workflow (10 min)
 
 **Steps:**
 
@@ -192,13 +234,14 @@
 
 ---
 
-### 9. Summary and Bridge to Next Lecture (5 min)
+### 10. Summary and Bridge to Next Lecture (5 min)
 
 **Key Takeaways:**
 
 - ML fundamentals apply to NLP
 - Text brings unique challenges
-- **Next lecture:** How do we represent words? Language models and embeddings
+- N-gram models show the need for better representations
+- **Next lecture:** Neural networks that can learn representations from data
 
 ---
 
@@ -232,6 +275,12 @@
    - Confusion matrix visualization
    - Precision-recall curves
 
+6. **N-gram language model**
+   - Build bigram/trigram model from corpus
+   - Compute perplexity on test set
+   - Generate sample text (show limitations)
+   - Demonstrate sparsity problem with unseen n-grams
+
 ### Mathematical Derivations
 
 1. **Cross-entropy loss for classification**
@@ -247,6 +296,16 @@
 3. **Bias-Variance Decomposition**
    - Expected test error = Bias² + Variance + Irreducible Error
    - Intuition in context of text classification
+
+4. **N-gram probability estimation**
+   - MLE: $\hat{P}(w_i | w_{i-1}) = \frac{C(w_{i-1}, w_i)}{C(w_{i-1})}$
+   - Why this is maximum likelihood
+   - Add-one smoothing derivation
+
+5. **Perplexity derivation**
+   - From cross-entropy to perplexity
+   - Connection to bits per word
+   - Why geometric mean
 
 ### Visualizations
 
@@ -273,6 +332,11 @@
 5. **Feature representation comparison**
    - Sparse vs dense representations
    - Bag-of-words vs TF-IDF visualization
+
+6. **N-gram probability distributions**
+   - Bar charts of word probabilities given context
+   - Compare unigram vs bigram distributions
+   - Show sparsity in count tables
 
 ### Datasets to Use
 
@@ -347,6 +411,7 @@
 
 1. **"Speech and Language Processing"** - Jurafsky & Martin (3rd ed.)
    - Chapter 2: Regular Expressions, Text Normalization, Edit Distance
+   - Chapter 3: N-gram Language Models
    - Chapter 4: Naive Bayes and Sentiment Classification
 
 2. **"Introduction to Information Retrieval"** - Manning, Raghavan & Schütze

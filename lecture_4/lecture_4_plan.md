@@ -1,533 +1,390 @@
-# Lecture 4: Neural Networks
+# Lecture 4: Attention Mechanisms
 
 ## Course Information
 
-**Duration:** 2-2.5 hours  
-**Prerequisites:** Lecture 3 (Tokenization), basic calculus and linear algebra  
-**Next Lecture:** Transformers
+**Duration:** 2-2.5 hours
+**Prerequisites:** Lecture 3 (Tokenization), Lecture 2 (Neural networks, embeddings)
+**Next Lecture:** Transformer Architecture and Long Context
 
 ---
 
 ## Lecture Outline
 
-### 1. Motivation: From Linear Models to Neural Networks (10-15 min)
+### 1. Motivation: Why We Need Attention (15-20 min)
 
 **Topics:**
 
-- Recap: Lecture 1's linear models (logistic regression on bag-of-words)
-- **Why linear models aren't enough:**
-  - Can't capture interactions between features
-  - No hierarchy of representations
-  - Limited expressiveness for complex patterns in text
-- **What neural networks offer:**
-  - Non-linear transformations
-  - Learned feature hierarchies
-  - Composition of simple functions → complex behavior
-- **The path to LLMs:**
-  - Neural networks are the foundation
-  - Everything we learn scales: small networks → massive LLMs
-  - Same principles: forward pass, backprop, optimization
-- **NLP motivation:**
-  - From Word2Vec (Lecture 2) to contextualized embeddings
-  - How neural networks process token sequences
-- Course roadmap: This lecture → RNNs/Transformers → Pretraining
+#### **Recap: Limitations of Pooling (Lecture 2)**
+
+- Mean/max pooling loses word order
+- "not good" and "good not" become identical
+- Long-range dependencies lost: "The movie started well but the ending was terrible"
+- Can't handle variable-length sequences properly
+
+#### **The Sequential Processing Problem**
+
+- Text is inherently sequential
+- Need to process one token at a time while remembering context
+- Historical approach: Recurrent Neural Networks (RNNs)
+
+#### **RNNs: A Brief History (10 min)**
+
+- **Basic idea:** hidden state passed from step to step
+  - $h_t = f(W_h h_{t-1} + W_x x_t + b)$
+- **What they solved:** process sequences of any length
+- **What they failed at:**
+  - Sequential bottleneck: can't parallelize
+  - Vanishing gradients: information from early tokens fades
+  - Slow training: O(sequence_length) sequential steps
+- **LSTMs and GRUs:** helped with vanishing gradients, not parallelization
+
+#### **The Key Insight**
+
+- What if every position could directly attend to every other position?
+- No sequential processing needed
+- No information bottleneck through hidden state
+- **This is attention**
 
 ---
 
-### 2. The Building Blocks: Neurons and Layers (20-25 min)
+### 2. Self-Attention: The Core Idea (30-35 min)
 
 **Topics:**
 
-#### **Single Neuron**
+#### **Intuition: Dynamic Information Routing**
 
-- Weighted sum: $z = \sum_{i=1}^{n} w_i x_i + b = \mathbf{w}^T\mathbf{x} + b$
-- Activation function: $a = f(z)$
-- Biological inspiration (brief): simplified model of brain neurons
+- Each position asks: "What other positions should I look at?"
+- Different for each input (content-based)
+- Example: "The cat sat on the mat because it was tired"
+  - "it" needs to attend to "cat" to resolve reference
+  - Different sentence → different attention pattern
 
-#### **Activation Functions**
+#### **The Query-Key-Value Framework**
 
-- **Linear:** $f(z) = z$ (useless - just stacking linear functions)
-- **Sigmoid:** $\sigma(z) = \frac{1}{1 + e^{-z}}$
-  - Output range: (0, 1)
-  - Used in output layer for binary classification
-  - Problem: vanishing gradients
-- **Tanh:** $\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$
-  - Output range: (-1, 1)
-  - Zero-centered (better than sigmoid)
-- **ReLU:** $\text{ReLU}(z) = \max(0, z)$
-  - Most common in modern networks
-  - Solves vanishing gradient problem
-  - Fast to compute
-  - Variants: Leaky ReLU, GELU (used in GPT models)
+**Analogy: Database Lookup**
 
-**Why non-linearity matters:**
+- Query (Q): what am I looking for?
+- Key (K): what do I have to offer?
+- Value (V): what information do I contain?
+- Attention: Q asks "which K's match me?", then retrieves corresponding V's
 
-- Without it: $f(W_2 f(W_1 x)) = f(W_2 W_1 x) = f(Wx)$ - just a linear model
-- With it: can approximate any continuous function (universal approximation theorem)
+**Computing Q, K, V:**
 
-#### **Layers and Architecture**
+- Input: sequence of embeddings $X \in \mathbb{R}^{n \times d}$
+- Learned projections:
+  - $Q = XW_Q$ where $W_Q \in \mathbb{R}^{d \times d_k}$
+  - $K = XW_K$ where $W_K \in \mathbb{R}^{d \times d_k}$
+  - $V = XW_V$ where $W_V \in \mathbb{R}^{d \times d_v}$
+- Each position generates its own Q, K, V
 
-- **Input layer:** raw features (embeddings for text)
-- **Hidden layers:** learned representations
-- **Output layer:** task-specific predictions
-- **Fully connected (dense) layers:** every neuron connects to all previous layer neurons
-- **Notation:**
-  - Layer $l$ has $n_l$ neurons
-  - Weight matrix $W^{[l]} \in \mathbb{R}^{n_l \times n_{l-1}}$
-  - Bias vector $b^{[l]} \in \mathbb{R}^{n_l}$
-  - Activations $a^{[l]} \in \mathbb{R}^{n_l}$
+**Step-by-step example with numbers:**
 
-#### **NLP Example: Sentiment Classification**
+- 3 tokens: ["The", "cat", "sat"]
+- Show actual Q, K, V vectors
+- Compute attention step by step
 
-- Input: averaged Word2Vec embeddings (300 dimensions)
-- Hidden layer: 128 neurons with ReLU
-- Output layer: 1 neuron with sigmoid (positive/negative)
-- Architecture: 300 → 128 → 1
+#### **Attention Scores: Measuring Relevance**
 
-**Code demo:** Visualize different activation functions
+- Dot product between query and keys: $\text{score}_{ij} = q_i \cdot k_j$
+- Higher score = more relevant
+- Matrix form: $\text{Scores} = QK^T$ (shape: $n \times n$)
+
+**Why dot product?**
+
+- Measures similarity between vectors
+- Fast to compute (matrix multiplication)
+- Learnable (through Q, K projections)
+
+#### **Scaled Dot-Product Attention**
+
+- Problem: dot products can get very large with high dimensions
+- Large values → softmax saturates → vanishing gradients
+- **Solution:** scale by $\sqrt{d_k}$
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+
+**Why $\sqrt{d_k}$?**
+
+- If $q, k$ have unit variance, $q \cdot k$ has variance $d_k$
+- Scaling restores unit variance
+- Keeps softmax in good gradient region
+
+#### **Softmax: Converting Scores to Weights**
+
+- $\text{weights}_{ij} = \frac{\exp(\text{score}_{ij})}{\sum_k \exp(\text{score}_{ik})}$
+- Each row sums to 1 (probability distribution)
+- Each position gets weighted combination of all values
+
+#### **Final Output**
+
+- Weighted sum of values: $\text{output}_i = \sum_j \text{weight}_{ij} \cdot v_j$
+- Matrix form: $\text{Output} = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$
+- Shape: same as input ($n \times d_v$)
+
+**Code demo:**
+
+- Implement scaled dot-product attention from scratch
+- Visualize attention weights as heatmap
+- Show how weights change with different inputs
 
 ---
 
-### 3. Forward Pass: Making Predictions (15-20 min)
+### 3. Properties of Self-Attention (15-20 min)
 
 **Topics:**
 
-#### **Computing activations layer by layer**
+#### **Every Position Connects to Every Position**
 
-- Layer 1: $z^{[1]} = W^{[1]}x + b^{[1]}$, then $a^{[1]} = f(z^{[1]})$
-- Layer 2: $z^{[2]} = W^{[2]}a^{[1]} + b^{[2]}$, then $a^{[2]} = f(z^{[2]})$
-- Output: $\hat{y} = a^{[L]}$
+- O(n²) paths between positions
+- No information bottleneck
+- Long-range dependencies handled directly
+- Compare to RNN: information must flow through all intermediate steps
 
-#### **Matrix notation for efficiency**
+#### **Permutation Equivariance**
 
-- Batch processing: $X \in \mathbb{R}^{m \times n}$ (m examples, n features)
-- $Z^{[1]} = XW^{[1]T} + b^{[1]}$ (broadcasting bias)
-- Shapes matter: $(m \times n_{l-1})(n_{l-1} \times n_l) = (m \times n_l)$
+- If you shuffle input positions, output shuffles the same way
+- **Problem:** "The cat sat" and "sat cat The" produce same attention pattern
+- Attention is position-agnostic
+- **Solution:** positional encodings (next section)
 
-#### **Step-by-step example**
+#### **Fully Parallelizable**
 
-- Input: sentence embedding [0.2, -0.5, 0.8, ...]
-- Hidden layer computation with actual numbers
-- Output probability: 0.87 (positive sentiment)
+- All positions computed simultaneously
+- No sequential dependencies during forward pass
+- Massive GPU speedup compared to RNNs
+- Critical for training at scale
 
-#### **Vectorization benefits**
+#### **Computational Complexity**
 
-- GPU acceleration
-- Batch processing efficiency
-- Same code for single example or batch
+- Time: O(n²d) — quadratic in sequence length
+- Memory: O(n²) for attention weights
+- **Implication:** limits maximum sequence length
+- Preview: solutions in Lecture 5 (Flash Attention, sliding window)
 
-**Code examples:**
+**Visualization:**
 
-- Implement forward pass from scratch (NumPy)
-- Visualize activations layer by layer
-- Show dimensions at each step
+- Show attention patterns on real sentences
+- Compare "The cat sat on the mat" attention pattern with different sentences
+- Highlight how attention captures syntactic/semantic relationships
 
 ---
 
-### 4. Loss Functions and the Learning Problem (15-20 min)
+### 4. Positional Encodings (20-25 min)
 
 **Topics:**
 
-#### **Binary Cross-Entropy**
+#### **The Position Problem**
 
-- For binary classification: $L = -\frac{1}{m}\sum_{i=1}^{m}[y^{(i)}\log(\hat{y}^{(i)}) + (1-y^{(i)})\log(1-\hat{y}^{(i)})]$
-- Intuition: penalize confidence in wrong predictions
-- Connection to maximum likelihood estimation
-- Why we use log: numerical stability, connection to information theory
+- Self-attention treats input as a set, not a sequence
+- "dog bites man" vs "man bites dog" → identical without positions
+- Need to inject position information
 
-#### **Multi-class Cross-Entropy (Categorical)**
+#### **Learned Positional Embeddings**
 
-- Softmax output: $\hat{y}_j = \frac{e^{z_j}}{\sum_{k=1}^{K} e^{z_k}}$
-- Loss: $L = -\frac{1}{m}\sum_{i=1}^{m}\sum_{j=1}^{K} y_j^{(i)} \log(\hat{y}_j^{(i)})$
-- **Critical for LLMs:** next-token prediction uses this
+- Add learnable vectors for each position: $x_i + p_i$
+- $P \in \mathbb{R}^{L_{max} \times d}$ where $L_{max}$ is max sequence length
+- Simple and effective
+- **Limitation:** can't generalize beyond $L_{max}$
 
-#### **Loss as Optimization Problem**
+#### **Sinusoidal Positional Encoding (Original Transformer)**
 
-- Goal: $\min_{\theta} L(\theta)$ where $\theta = \{W^{[1]}, b^{[1]}, W^{[2]}, b^{[2]}, ...\}$
-- Empirical risk minimization
-- Why we can't solve analytically (non-convex, high-dimensional)
+$$PE_{(pos, 2i)} = \sin(pos / 10000^{2i/d})$$
+$$PE_{(pos, 2i+1)} = \cos(pos / 10000^{2i/d})$$
 
-#### **NLP-specific considerations**
+**Why this formula?**
 
-- Classification: sentiment, topic, spam detection
-- **Next-token prediction:** foundation of language models
-  - Predict $P(w_{t+1} | w_1, ..., w_t)$
-  - Cross-entropy over vocabulary
-  - Preview for Lectures 6-7
+- Different frequencies for different dimensions
+- Low dimensions: high frequency (distinguish nearby positions)
+- High dimensions: low frequency (distinguish distant positions)
+- **Key property:** relative positions can be represented as linear combinations
+  - $PE_{pos+k}$ can be expressed as linear function of $PE_{pos}$
 
-**Code examples:**
+**Why addition not concatenation?**
 
-- Compute cross-entropy loss manually
-- Compare binary and multi-class formulations
-- Visualize loss landscape (2D projection)
+- Keeps dimensionality same
+- Embeddings and positions interact through attention
+- Works empirically
+
+**Visualization:**
+
+- Plot sinusoidal patterns for different dimensions
+- Show how positions differ across the encoding
+- Demonstrate periodicity at different scales
+
+#### **Modern Alternative: Rotary Position Embeddings (RoPE)**
+
+- Brief introduction (detailed in Lecture 5)
+- Encodes position directly in attention computation
+- Better for long sequences
+- Used by: LLaMA, Mistral, most modern open models
+
+**Code demo:**
+
+- Implement sinusoidal positional encoding
+- Visualize the encoding matrix
+- Show effect on attention with vs without positions
 
 ---
 
-### 5. Backpropagation: Computing Gradients (20-25 min)
+### 5. Multi-Head Attention (25-30 min)
 
 **Topics:**
 
-#### **The Gradient Descent Idea**
+#### **Limitation of Single Attention**
 
-- Update rule: $\theta := \theta - \alpha \nabla_\theta L$
-- Need gradients of loss with respect to all parameters
-- How to compute efficiently? Backpropagation
+- One attention pattern per layer
+- But words relate in multiple ways simultaneously:
+  - Syntactic: subject-verb agreement
+  - Semantic: coreference resolution
+  - Positional: adjacent words
+  - Thematic: topic-related words
 
-#### **Chain Rule Intuition**
+#### **The Multi-Head Solution**
 
-- $\frac{\partial L}{\partial W^{[1]}} = \frac{\partial L}{\partial a^{[2]}} \frac{\partial a^{[2]}}{\partial z^{[2]}} \frac{\partial z^{[2]}}{\partial a^{[1]}} \frac{\partial a^{[1]}}{\partial z^{[1]}} \frac{\partial z^{[1]}}{\partial W^{[1]}}$
-- Work backwards from output to input
-- Reuse computations: dynamic programming
+- Run h parallel attention operations
+- Each "head" has its own Q, K, V projections
+- Each head can specialize in different relationship types
 
-#### **Backpropagation Algorithm**
+**Architecture:**
 
-1. Forward pass: compute all activations
-2. Compute output error: $\delta^{[L]} = \nabla_{a^{[L]}}L \odot f'(z^{[L]})$
-3. Propagate error backwards: $\delta^{[l]} = (W^{[l+1]T}\delta^{[l+1]}) \odot f'(z^{[l]})$
-4. Compute parameter gradients: $\nabla_{W^{[l]}}L = \delta^{[l]} a^{[l-1]T}$
+$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, ..., \text{head}_h)W^O$$
 
-#### **Detailed Derivation: 2-Layer Network**
+where $\text{head}_i = \text{Attention}(XW_Q^i, XW_K^i, XW_V^i)$
 
-- Network: input → hidden (ReLU) → output (sigmoid) → binary cross-entropy
-- Derive all gradients step by step
-- Show dimensions match for matrix multiplication
+**Dimensions:**
 
-#### **Why This Scales**
+- If model dimension is $d_{model}$ and we have $h$ heads
+- Each head has dimension $d_k = d_v = d_{model} / h$
+- Example: $d_{model} = 512$, $h = 8$ → each head is 64-dimensional
+- Output projection $W^O \in \mathbb{R}^{hd_v \times d_{model}}$
 
-- Computational complexity: $O(\text{parameters})$ per example
-- Memory: store activations during forward pass
-- Automatic differentiation in modern frameworks
-- Same algorithm whether 2 layers or 200 layers
+#### **What Do Different Heads Learn?**
 
-**Code examples:**
+- Head 1: syntactic structure (subject-verb, noun-adjective)
+- Head 2: coreference (pronouns → antecedents)
+- Head 3: local dependencies (adjacent tokens)
+- Head 4+: harder to interpret but complementary
+- **Research:** BERTology papers analyzed head specialization
 
-- Implement backprop from scratch for simple network
-- Verify gradients with numerical gradient checking
-- Compare manual backprop vs PyTorch autograd
-- Visualize gradient flow through network
+**Visualization:**
+
+- Show attention patterns from different heads on same sentence
+- Demonstrate head specialization
+- Some heads attend locally, others globally
+
+#### **Why Multiple Heads Work**
+
+- Ensemble of attention patterns
+- Different "lenses" to view the same input
+- Redundancy for robustness
+- Increased expressiveness
+
+#### **Hyperparameters**
+
+- Number of heads: typically 8-16 (BERT: 12, GPT-3: 96)
+- Head dimension: $d_{model} / h$
+- Total parameters: same as single large head (just restructured)
+
+**Code demo:**
+
+- Implement multi-head attention from scratch
+- Visualize multiple heads on same input
+- Compare to single-head attention
 
 ---
 
-### 6. Optimization Algorithms (20-25 min)
+### 6. Attention in Practice (15-20 min)
 
 **Topics:**
 
-#### **Stochastic Gradient Descent (SGD)**
+#### **Causal (Masked) Attention**
 
-- Update with single example: $\theta := \theta - \alpha \nabla_\theta L^{(i)}$
-- **Properties:**
-  - Noisy updates (high variance)
-  - Can escape shallow local minima
-  - Slow convergence
-- Learning rate $\alpha$ critical: too high → diverge, too low → slow
+- For autoregressive generation: position i can only attend to positions ≤ i
+- Implement via attention mask: set future positions to -∞ before softmax
+- Creates lower-triangular attention pattern
+- **Used by:** GPT, LLaMA, all decoder-only models
 
-#### **SGD with Momentum**
+**Mask implementation:**
 
-- Accumulate gradient history:
-  - $v := \beta v + (1-\beta)\nabla_\theta L$
-  - $\theta := \theta - \alpha v$
-- **Intuition:** rolling ball down hill
-- **Benefits:**
-  - Smooths out noisy gradients
-  - Accelerates in consistent directions
-  - Typical $\beta = 0.9$
-
-#### **Adam (Adaptive Moment Estimation)**
-
-- Combines momentum + adaptive learning rates
-- **Algorithm:**
-  - $m := \beta_1 m + (1-\beta_1)\nabla_\theta L$ (first moment)
-  - $v := \beta_2 v + (1-\beta_2)(\nabla_\theta L)^2$ (second moment)
-  - Bias correction: $\hat{m} = m/(1-\beta_1^t)$, $\hat{v} = v/(1-\beta_2^t)$
-  - Update: $\theta := \theta - \alpha \frac{\hat{m}}{\sqrt{\hat{v}} + \epsilon}$
-- **Default values:** $\beta_1=0.9$, $\beta_2=0.999$, $\alpha=0.001$
-- **Why it's dominant:**
-  - Adaptive learning rate per parameter
-  - Robust to hyperparameter choice
-  - Works well in practice
-
-#### **AdamW: Weight Decay Fix**
-
-- Standard Adam with proper weight decay
-- Used in virtually all modern LLMs (GPT, BERT, LLaMA)
-- Decouples weight decay from gradient update
-
-#### **Learning Rate Schedules**
-
-- **Constant:** simplest, often good enough for small models
-- **Step decay:** reduce LR at fixed intervals
-- **Cosine decay:** smooth reduction
-- **Warmup + decay:**
-  - Linearly increase LR for first few % of training
-  - Then decay
-  - **Critical for LLM training** (preview for Lecture 6)
-
-#### **Comparison and Visualization**
-
-- SGD: jagged path, slow convergence
-- Momentum: smoother, faster
-- Adam: fastest, most stable
-- **When to use what:**
-  - Small models/datasets: Adam usually best
-  - Large-scale LLMs: AdamW with warmup
-  - Sometimes SGD generalizes better (debated)
-
-**Code examples:**
-
-- Implement SGD, Momentum, Adam from scratch
-- Train same network with different optimizers
-- Visualize convergence paths on 2D loss landscape
-- Compare training curves (loss vs iteration)
-
----
-
-### 7. Training Mechanics: From Theory to Practice (25-30 min)
-
-**Topics:**
-
-#### **Mini-Batch Training**
-
-**Why mini-batches?**
-
-- Full batch: too slow, doesn't fit in memory, poor convergence
-- Single example (SGD): too noisy, slow hardware utilization
-- Mini-batch: sweet spot
-
-**Batch size considerations:**
-
-- **Small batches (32-128):**
-  - More noise in gradients
-  - Better generalization (debated)
-  - More frequent updates
-- **Large batches (256-4096):**
-  - More stable gradients
-  - Better hardware utilization (GPUs)
-  - Used in LLM pretraining
-- **Critical for LLMs:** batch size × sequence length must fit in GPU memory
-
-**Implementation details:**
-
-- Batch size as hyperparameter
-- Gradient accumulation for large effective batch sizes
-- Relationship to learning rate: larger batch → increase LR
-
-#### **Data Handling During Training**
-
-**Shuffling:**
-
-- Randomize order each epoch
-- Why: prevent model from learning order artifacts
-- **Important for text:** avoid temporal/thematic clustering
-
-**Epochs and iterations:**
-
-- 1 epoch = 1 pass through entire dataset
-- Iteration = processing one mini-batch
-- Typical training: 10-100 epochs for small datasets
-
-**Train/Validation Split Usage:**
-
-- Train: update parameters
-- Validation: monitor generalization, tune hyperparameters
-- Test: final evaluation only (never look during training)
-
-**Data pipeline:**
-
-- Load batch → tokenize → convert to embeddings → feed to model
-- Efficient data loading crucial for large datasets
-
-#### **Training Curves: Reading the Story**
-
-**What to plot:**
-
-- Training loss vs iteration/epoch
-- Validation loss vs iteration/epoch
-- (Optional) Accuracy or task-specific metric
-
-**Interpreting curves:**
-
-**Good fit:**
-
-- Training and validation loss both decreasing
-- Validation loss close to training loss
-- Validation loss plateaus → time to stop
-
-**Overfitting:**
-
-- Training loss keeps decreasing
-- Validation loss increases or plateaus early
-- Gap between train and val grows
-- **Solutions:** regularization, more data, simpler model
-
-**Underfitting:**
-
-- Both losses high and plateauing
-- Model not learning much
-- **Solutions:** more capacity, train longer, better features
-
-**Noisy but improving:**
-
-- Validation loss fluctuates but trend downward
-- Normal with small validation sets or small batches
-
-**Real examples:**
-
-- Show actual training runs with different scenarios
-- Identify when to stop training
-- Early stopping based on validation loss
-
-#### **Practical Considerations**
-
-**Initialization:**
-
-- Random initialization matters
-- Xavier/Glorot: $W \sim \mathcal{N}(0, \frac{2}{n_{in} + n_{out}})$
-- He initialization for ReLU: $W \sim \mathcal{N}(0, \frac{2}{n_{in}})$
-- Why: maintain activation magnitudes across layers
-
-**Gradient clipping:**
-
-- Prevent exploding gradients: $\nabla \theta := \min(1, \frac{\text{threshold}}{||\nabla\theta||}) \nabla\theta$
-- **Essential for RNNs and Transformers** (Lecture 5)
-
-**Regularization techniques:**
-
-- **Dropout:** randomly zero neurons during training
-  - Typical rate: 0.1-0.5
-  - Prevents co-adaptation
-  - Used in most LLMs
-- **Weight decay (L2):** add $\lambda ||\theta||^2$ to loss
-- **Early stopping:** stop when validation loss stops improving
-
-**Monitoring training:**
-
-- Log metrics every N iterations
-- Validate every epoch
-- Save checkpoints regularly
-- Watch for NaN losses (learning rate too high)
-
-**Code examples:**
-
-- Complete training loop with mini-batches
-- Data shuffling and batching
-- Compute and plot training curves
-- Implement early stopping
-- Add dropout and weight decay
-- Logging and checkpointing
-
----
-
-### 8. Neural Networks for Text Classification (15-20 min)
-
-**Topics:**
-
-#### **Architecture Design**
-
-**Input: Embedded text**
-
-- Tokens → embeddings (from Lecture 2)
-- Each token: 300d vector (Word2Vec/GloVe)
-- Sequence: $(n_{\text{tokens}}, 300)$
-
-**Handling variable length:**
-
-- **Problem:** sentences have different lengths
-- **Solution 1:** Padding to max length (wasteful)
-- **Solution 2:** Pooling embeddings
-
-**Pooling strategies:**
-
-- **Mean pooling:** average all token embeddings
-  - $\text{doc\_embedding} = \frac{1}{n}\sum_{i=1}^{n} \text{emb}_i$
-  - Simple, works well
-  - Loses word order information
-- **Max pooling:** take max of each dimension
-- **Attention-based pooling:** (preview for Transformers)
-  - Learn which tokens are important
-  - More sophisticated
-
-**Network architecture:**
-
-```
-Input: [batch_size, seq_len, embed_dim]
-  ↓ Pool (mean)
-Pooled: [batch_size, embed_dim]
-  ↓ Linear + ReLU
-Hidden: [batch_size, hidden_dim]
-  ↓ Dropout
-  ↓ Linear + Sigmoid
-Output: [batch_size, num_classes]
+```python
+mask = torch.triu(torch.ones(n, n), diagonal=1) * -1e9
+attention_weights = softmax((Q @ K.T) / sqrt(d_k) + mask)
 ```
 
-#### **End-to-End Example: IMDB Sentiment**
+#### **Cross-Attention**
 
-- Input: movie review
-- Tokenize (Lecture 3)
-- Embed with Word2Vec (Lecture 2)
-- Pool to fixed size
-- Neural network: 300 → 128 → 1
-- Sigmoid output: probability of positive
+- Queries from one sequence, keys/values from another
+- Used in encoder-decoder models (T5, BART)
+- Machine translation: decoder attends to encoder outputs
+- Not our focus (decoder-only dominates modern LLMs)
 
-**Training:**
+#### **Attention Patterns in Real Models**
 
-- Binary cross-entropy loss
-- Adam optimizer
-- Batch size: 64
-- Monitor train/val curves
+- Some heads learn interpretable patterns
+- Many heads are redundant (can be pruned)
+- Attention ≠ explanation (ongoing debate)
 
-**Results comparison:**
+#### **Common Issues and Debugging**
 
-- Logistic regression (Lecture 1): ~88% accuracy
-- Neural network with embeddings: ~92% accuracy
-- Show confusion matrix
-- Error analysis: what does it miss?
+- Attention collapse: all positions attend to same place
+- Dead heads: heads that don't learn useful patterns
+- Numerical instability: need careful softmax implementation
 
-#### **Limitations of This Approach**
+**Code demo:**
 
-**What we can't handle well:**
-
-- **Long-range dependencies:** "The movie started well but the ending was terrible"
-  - Averaging loses this structure
-- **Word order:** "not good" vs "good"
-  - Pooling is order-invariant
-- **Context-dependent meaning:** "The bank by the river" vs "The bank downtown"
-  - Static embeddings
-- **Variable-length sequences efficiently:**
-  - Padding is wasteful
-  - Need better sequential processing
-
-**What we need:** Process sequences while preserving order and relationships
-→ Sets up Transformers (Lecture 5)
-
-**Code examples:**
-
-- Complete IMDB classification pipeline
-- Compare mean vs max pooling
-- Visualize learned representations
-- Error analysis on validation set
+- Implement causal masking
+- Show attention pattern with mask
+- Visualize attention from actual pre-trained model
 
 ---
 
-### 9. Summary and Bridge to Next Lecture (5 min)
+### 7. Building Intuition: Attention as Computation (10-15 min)
+
+**Topics:**
+
+#### **What Can Attention Compute?**
+
+- Copying: attend to specific position, copy its value
+- Averaging: uniform attention = mean pooling
+- Pattern matching: Q-K similarity enables content-based retrieval
+- Composition: stack layers for complex computations
+
+#### **Attention as Soft Dictionary Lookup**
+
+- Keys: what's stored
+- Values: the content
+- Query: the lookup key
+- Output: soft combination of matching entries
+
+#### **Why This Is Powerful**
+
+- Dynamic routing: computation depends on input
+- No fixed connectivity like convolutions
+- Learns what's relevant from data
+- Scales with more heads and layers
+
+---
+
+### 8. Summary and Bridge to Next Lecture (5 min)
 
 **Key Takeaways:**
 
-- Neural networks = non-linear function approximators
-- Backpropagation + optimization algorithms enable learning
-- Training mechanics (batching, curves, monitoring) are crucial
-- Same principles scale from small networks to LLMs
-- **For text:** embeddings + pooling + dense layers work, but limitations remain
+- Attention enables direct connections between all positions
+- Query-Key-Value: dynamic, content-based information routing
+- Scaling by $\sqrt{d_k}$ prevents gradient saturation
+- Positional encodings inject sequence order
+- Multi-head attention captures multiple relationship types
+- Causal masking for autoregressive generation
 
 **What's next:**
 
-- **Problem:** Current approach treats text as "bag of embeddings"
-- **Missing:** Sequential processing, long-range dependencies, context
-- **Solution (Lecture 5):**
-  - Brief history: RNNs tried but failed at scale
-  - Transformers and attention mechanism
-  - How modern LLMs actually process text
-- **Connection:** Everything learned today (backprop, Adam, training curves) applies to Transformers
-- **Scaling up (Lectures 6-7):** Same neural network principles, just billions of parameters and trillions of tokens
+- Attention is the core mechanism
+- **Lecture 5:** Full transformer architecture
+  - Feed-forward networks
+  - Residual connections and layer normalization
+  - Stacking layers
+  - Modern variants: MQA, GQA, Flash Attention
+  - Long context handling: from 512 to 1M tokens
 
 ---
 
@@ -535,269 +392,204 @@ Output: [batch_size, num_classes]
 
 ### Code Examples
 
-1. **Activation functions visualization**
-   - Plot sigmoid, tanh, ReLU, GELU
-   - Show derivatives
-   - Understand vanishing gradient problem
-
-2. **Forward pass from scratch**
-   - NumPy implementation of multi-layer network
+1. **Scaled dot-product attention from scratch**
+   - NumPy/PyTorch implementation
    - Step through with actual numbers
-   - Verify shapes at each layer
+   - Verify shapes at each step
 
-3. **Backpropagation implementation**
-   - Manual gradient computation
-   - Numerical gradient checking
-   - Compare with PyTorch autograd
+2. **Attention visualization**
+   - Plot attention weights as heatmap
+   - Compare patterns for different inputs
+   - Interactive exploration
 
-4. **Optimizer comparison**
-   - Implement SGD, Momentum, Adam from scratch
-   - Train on same task
-   - Visualize convergence paths
-   - Plot loss curves side-by-side
+3. **Positional encoding implementation**
+   - Sinusoidal encoding
+   - Visualize the encoding matrix
+   - Show effect on attention
 
-5. **Complete training loop**
-   - Mini-batch processing
-   - Data shuffling
-   - Train/val split
-   - Logging metrics
-   - Plotting curves
-   - Early stopping
-   - Model checkpointing
+4. **Multi-head attention**
+   - Full implementation
+   - Visualize different heads
+   - Compare to single-head
 
-6. **Text classification pipeline**
-   - Load IMDB dataset
-   - Tokenize (use Lecture 3 tools)
-   - Embed with Word2Vec (load from Lecture 2)
-   - Build PyTorch/Keras model
-   - Train with proper monitoring
-   - Evaluate and analyze errors
+5. **Causal masking**
+   - Implement autoregressive attention
+   - Show mask effect on weights
+   - Generation example
 
-7. **Hyperparameter experiments**
-   - Vary learning rate
-   - Vary batch size
-   - Vary hidden layer size
-   - Vary dropout rate
-   - Document effects on training curves
+6. **Load pre-trained model attention**
+   - Extract attention from GPT-2 or BERT
+   - Visualize real attention patterns
+   - Analyze head specialization
 
 ### Mathematical Derivations
 
-1. **Universal approximation theorem** (statement only)
-   - Single hidden layer can approximate any continuous function
-   - Intuition and implications
+1. **Attention formula derivation**
+   - From intuition to math
+   - Why softmax?
+   - Why dot product?
 
-2. **Backpropagation for 2-layer network**
-   - Full derivation with chain rule
-   - Input → Hidden (ReLU) → Output (Sigmoid)
-   - Binary cross-entropy loss
-   - All gradient calculations step-by-step
+2. **Scaling factor derivation**
+   - Variance analysis of dot products
+   - Why $\sqrt{d_k}$ specifically
+   - Effect on gradients
 
-3. **Cross-entropy gradient**
-   - Binary case: $\frac{\partial L}{\partial z} = \hat{y} - y$
-   - Multi-class case: $\frac{\partial L}{\partial z_i} = \hat{y}_i - y_i$
-   - Why these are so simple (sigmoid/softmax + cross-entropy)
+3. **Positional encoding properties**
+   - Relative position representation
+   - Prove linear relationship between $PE_{pos}$ and $PE_{pos+k}$
 
-4. **Optimizer update rules**
-   - SGD: $\theta_{t+1} = \theta_t - \alpha \nabla L$
-   - Momentum: derive from exponential moving average
-   - Adam: full algorithm with bias correction
+4. **Multi-head complexity analysis**
+   - Parameter count comparison
+   - Computational cost
+   - Memory requirements
 
-5. **Initialization variance**
-   - Why random initialization matters
-   - Derive Xavier initialization
-   - Connection to activation magnitude
+5. **Attention gradient flow**
+   - Backpropagation through attention
+   - Why no vanishing gradients
+   - Comparison with RNN gradients
 
 ### Visualizations
 
-1. **Neural network architecture diagrams**
-   - Show nodes, connections, layers
-   - Annotate dimensions
-   - Example flow for text classification
+1. **Attention weight heatmaps**
+   - Token-to-token attention
+   - Multiple sentences
+   - Before/after positional encoding
 
-2. **Activation function plots**
-   - Function and derivative side-by-side
-   - Highlight dead ReLU problem
-   - Compare GELU (used in GPT)
+2. **Multi-head attention patterns**
+   - Different heads on same input
+   - Head specialization
+   - Aggregate patterns
 
-3. **Optimization landscape**
-   - 2D loss surface
-   - Show SGD vs Momentum vs Adam paths
-   - Illustrate local minima, saddle points
+3. **RNN vs Attention comparison**
+   - Information flow diagrams
+   - Path lengths
+   - Parallelization
 
-4. **Training curves gallery**
-   - Good fit example
-   - Overfitting example
-   - Underfitting example
-   - Effect of learning rate (too high, too low, just right)
-   - Effect of batch size
+4. **Positional encoding visualization**
+   - Sinusoidal patterns
+   - Position similarity
+   - Extrapolation behavior
 
-5. **Gradient flow visualization**
-   - Forward pass: activations
-   - Backward pass: gradients
-   - Show vanishing/exploding gradients
-
-6. **Batch size effects**
-   - Training curves for different batch sizes
-   - Convergence speed vs stability trade-off
-
-7. **Pooling strategies comparison**
-   - Mean pooling vs max pooling
-   - Attention-based pooling (teaser)
+5. **Causal mask visualization**
+   - Lower triangular pattern
+   - Effect on attention weights
 
 ### Datasets to Use
 
-1. **IMDB Movie Reviews**
-   - Continue from Lecture 1
-   - Binary sentiment classification
-   - Show improvement over linear models
+1. **Simple synthetic sentences**
+   - Subject-verb agreement: "The cat that the dog chased runs"
+   - Coreference: "The cat ate because it was hungry"
+   - Good for demonstrating attention patterns
 
-2. **AG News**
-   - Multi-class classification (4 classes)
-   - Demonstrate softmax + categorical cross-entropy
-
-3. **Small synthetic dataset**
-   - For pedagogical backprop walkthrough
-   - XOR or similar non-linearly separable problem
+2. **Real text examples**
+   - News articles
+   - Wikipedia passages
+   - Show attention on natural text
 
 ### Student Exercises
 
-#### Exercise 1: Implement and train a neural network from scratch
+#### Exercise 1: Implement attention from scratch
 
-- Build 2-layer network in NumPy (no frameworks)
-- Implement forward pass, backprop, SGD
-- Train on simple dataset (e.g., XOR)
-- Verify against PyTorch implementation
+- Build scaled dot-product attention in NumPy
+- Verify with numerical gradient checking
+- Compare with PyTorch implementation
 
-#### Exercise 2: Optimizer comparison study
+#### Exercise 2: Attention pattern analysis
 
-- Implement text classifier with PyTorch
-- Train with SGD, SGD+Momentum, Adam
-- Compare convergence speed, final performance
-- Plot training curves
-- Vary learning rates for each
+- Load pre-trained model (GPT-2 or BERT)
+- Extract attention weights for different sentences
+- Identify what each head seems to learn
+- Document patterns
 
-#### Exercise 3: Diagnose training problems
+#### Exercise 3: Positional encoding exploration
 
-- Given several pre-configured training runs (some good, some bad)
-- Identify: overfitting, underfitting, bad LR, etc.
-- Suggest fixes for each case
-- Implement fixes and verify improvement
+- Implement sinusoidal encoding
+- Test extrapolation: train on length 100, test on length 200
+- Compare with learned embeddings
+- Visualize the encodings
 
-#### Exercise 4: Hyperparameter tuning
+#### Exercise 4: Multi-head vs single-head
 
-- IMDB sentiment classification
-- Systematically vary: hidden size, learning rate, batch size, dropout
-- Document effects on train/val curves
-- Find best configuration
-- Analyze trade-offs (performance vs training time)
+- Train small model with 1 head vs 8 heads
+- Compare performance on simple task
+- Analyze what multiple heads learn
 
-#### Exercise 5: Error analysis
+#### Exercise 5: Causal attention for generation
 
-- Train best model from Exercise 4
-- Find misclassified examples
-- Categorize error types
-- Identify patterns in failures
-- Suggest improvements (motivation for better architectures)
+- Implement causal masking
+- Build simple character-level generator
+- Demonstrate autoregressive generation
 
 ### Recommended Reading
 
 #### Foundational Papers
 
-1. **"Learning representations by back-propagating errors"** - Rumelhart, Hinton, Williams (1986)
-   - Original backpropagation paper
+1. **"Attention Is All You Need"** - Vaswani et al. (2017)
+   - The original transformer paper
+   - Focus on attention mechanism sections
 
-2. **"Adam: A Method for Stochastic Optimization"** - Kingma & Ba (2014)
-   - Most-used optimizer in deep learning
+2. **"Neural Machine Translation by Jointly Learning to Align and Translate"** - Bahdanau et al. (2014)
+   - Original attention in seq2seq
+   - Historical context
 
-3. **"Dropout: A Simple Way to Prevent Neural Networks from Overfitting"** - Srivastava et al. (2014)
-   - Essential regularization technique
+3. **"Effective Approaches to Attention-based Neural Machine Translation"** - Luong et al. (2015)
+   - Different attention variants
+   - Dot product vs additive attention
 
-4. **"Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"** - Ioffe & Szegedy (2015)
-   - Important for training deep networks (brief mention)
+#### Analysis and Interpretability
 
-5. **"Decoupled Weight Decay Regularization"** - Loshchilov & Hutter (2017)
-   - AdamW: proper weight decay in Adam
+1. **"A Multiscale Visualization of Attention in the Transformer Model"** - Vig (2019)
+   - BertViz tool
+   - Attention visualization
 
-#### Classic Textbooks
+2. **"What Do You Learn from Context? Probing for Sentence Structure in Contextualized Word Representations"** - Tenney et al. (2019)
+   - What different layers/heads learn
 
-1. **"Deep Learning"** - Goodfellow, Bengio, Courville
-   - Chapter 6: Deep Feedforward Networks
-   - Chapter 8: Optimization for Training Deep Models
-   - Comprehensive and authoritative
+3. **"Analyzing Multi-Head Self-Attention: Specialized Heads Do the Heavy Lifting"** - Voita et al. (2019)
+   - Head pruning analysis
+   - Head specialization
 
-2. **"Neural Networks and Deep Learning"** - Michael Nielsen (free online)
-   - Excellent intuitive explanations
-   - Interactive visualizations
-   - Great for beginners
+#### Textbooks and Surveys
 
-3. **"Pattern Recognition and Machine Learning"** - Bishop
-   - Chapter 5: Neural Networks
-   - More mathematical treatment
+1. **"Speech and Language Processing"** - Jurafsky & Martin (3rd ed.)
+   - Chapter on Transformers
+   - Accessible introduction
 
-#### Practical Guides
-
-1. **"A Recipe for Training Neural Networks"** - Andrej Karpathy (blog post)
-   - Practical wisdom for debugging training
-   - Essential reading
-
-2. **"Practical Recommendations for Gradient-Based Training of Deep Architectures"** - Bengio (2012)
-   - Hyperparameter choices, training tricks
+2. **"Deep Learning"** - Goodfellow, Bengio, Courville
+   - Attention and memory sections
 
 #### Online Resources
 
-1. **Stanford CS231n**
-   - Lecture notes on neural networks
-   - Backpropagation notes
-   - Optimization notes
+1. **The Illustrated Transformer** - Jay Alammar
+   - Excellent visual explanations
+   - Step-by-step walkthrough
 
-2. **Stanford CS224N**
-   - Lecture 3: Neural Networks and Backprop
+2. **The Annotated Transformer** - Harvard NLP
+   - PyTorch implementation with explanations
 
-3. **PyTorch Tutorials**
-   - Building neural networks
-   - Custom training loops
-
-4. **3Blue1Brown Neural Network Video Series**
-   - Excellent visual intuition
-   - Gradient descent and backprop
-
-#### Papers on Training Dynamics
-
-1. **"On Large-Batch Training for Deep Learning: Generalization Gap and Sharp Minima"** - Keskar et al. (2016)
-   - Batch size effects on generalization
-
-2. **"An Empirical Model of Large-Batch Training"** - McCandlish et al. (2018)
-   - Relationship between batch size and training time
-
-3. **"Visualizing the Loss Landscape of Neural Nets"** - Li et al. (2018)
-   - Understanding optimization challenges
+3. **Stanford CS224N**
+   - Lecture on Transformers and Attention
 
 ### Additional Materials
 
-#### Interactive Demos
-
-- TensorFlow Playground (online)
-- Neural network visualization tools
-- Live backpropagation step-through
-
 #### Discussion Questions
 
-- Why does ReLU work better than sigmoid in deep networks?
-- When would you use SGD instead of Adam?
-- How do you decide when to stop training?
-- Why does dropout improve generalization?
-- How would you debug a model that won't train (loss not decreasing)?
+- Why is attention O(n²)? Is this a fundamental limitation?
+- What can attention NOT compute?
+- Why do we need multiple heads if one head can attend anywhere?
+- How does attention compare to convolutions for NLP?
+- Is attention the same as "understanding"?
 
 #### Advanced Topics (Brief Mentions)
 
-- Batch normalization: normalize activations between layers
-- Residual connections: skip connections in deep networks (important for Transformers)
-- Gradient accumulation: simulate large batches with limited memory
-- Mixed precision training: use float16 for speed (important for LLMs)
+- Linear attention: O(n) approximations
+- Sparse attention: attend to subset of positions
+- Relative positional encodings
+- Attention and memory
 
 #### Lab Session Ideas
 
-- Jupyter notebook: step-by-step network training
-- Live debugging session: fix broken training runs
-- Interactive hyperparameter tuning
-- Competition: who can achieve best validation accuracy?
+- Step-by-step attention walkthrough with actual numbers
+- Interactive attention visualization
+- Compare RNN vs Transformer on sequence task
+- Head pruning experiment

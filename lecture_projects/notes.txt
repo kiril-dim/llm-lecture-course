@@ -1,0 +1,2 @@
+Needs more refinement of example projects: they should be more focused towards AI / LLM from last 2-3 years no need for NER and T5 there.
+What is the scoring format for the project? This complexity + presentation + reproducibility might be hard to apply? Maybe a clear scheme with point out of 5 alongside transparent criteria?

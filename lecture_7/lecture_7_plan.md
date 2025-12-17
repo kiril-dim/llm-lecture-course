@@ -6,11 +6,15 @@
 **Prerequisites:** Lecture 6 (Foundation Models, Pretraining Data, Scaling Laws)
 **Next Lecture:** Alignment and RLHF
 
+**Lecture Style:** Discussion-focused with real examples of model behaviors. Minimal code — emphasis on understanding phenomena through curated examples, visualizations of published results, and critical analysis. Prompt engineering techniques are deferred to Lecture 10.
+
 ---
 
 ## Lecture Outline
 
 ### 1. Introduction: What Are Emergent Capabilities? (10-15 min)
+
+**Style:** Conceptual framing with concrete examples
 
 **Topics:**
 
@@ -29,9 +33,13 @@
   - Connection to compression and world modeling
 - **Lecture roadmap:** From zero-shot to reasoning
 
+**Format:** Markdown exposition with example model outputs (no code required)
+
 ---
 
-### 2. Zero-Shot and Few-Shot Learning (25-30 min)
+### 2. Zero-Shot and Few-Shot Learning (20-25 min)
+
+**Style:** Show real model outputs, compare behaviors
 
 **Topics:**
 
@@ -50,7 +58,7 @@
 #### **Zero-Shot Learning**
 
 - Task description only, no examples
-- Example: "Translate to French: Hello" → "Bonjour"
+- Example outputs showing what models can/cannot do zero-shot
 - **When it emerged:** GPT-3 (175B parameters) showed reliable zero-shot
 - **What enables it:**
   - Instruction understanding from pretraining
@@ -61,31 +69,20 @@
 
 - Provide k examples in the prompt (typically 1-10)
 - Model infers pattern and applies to new example
-- **Classic example:**
-
-```
-  English: Hello, French: Bonjour
-  English: Goodbye, French: Au revoir
-  English: Thank you, French: [model completes]
-```
-
-- **Performance scaling:**
+- **Show real examples** of few-shot success and failure
+- **Performance scaling (from published results):**
   - Small models (<1B): minimal few-shot ability
   - Medium models (1-10B): some few-shot, inconsistent
   - Large models (>10B): strong few-shot, improves with k
   - Very large models (>100B): approaches fine-tuned performance
 
-#### **Demonstration: Few-shot prompting**
-
-- Sentiment classification with 0, 1, 5, 10 examples
-- Show performance improvement with examples
-- Compare model sizes on same task
-
-**Code example:** Implement few-shot prompting, vary k, measure accuracy
+**Format:** Tables of example inputs/outputs, static visualizations of scaling curves from papers
 
 ---
 
-### 3. In-Context Learning Mechanics (25-30 min)
+### 3. In-Context Learning Mechanics (20-25 min)
+
+**Style:** Theoretical discussion with diagrams
 
 **Topics:**
 
@@ -95,7 +92,7 @@
 - **Forward pass only:** attention mechanism processes prompt + query
 - **Analogy:** Model as meta-learner or algorithm learning algorithm
 
-#### **Current theories:**
+#### **Current theories (discussion-focused):**
 
 **Theory 1: Implicit fine-tuning**
 
@@ -123,207 +120,115 @@
 - Instruction format matters significantly
 - Models can learn "how to learn" from pretraining
 
-#### **What affects ICL performance:**
-
-- Model scale (larger = better ICL)
-- Pretraining data diversity
-- Example selection and ordering
-- Prompt template design
-- Task similarity to pretraining distribution
-
 #### **Limitations and failure modes:**
 
 - Limited by context window (can't fit many examples)
 - Inconsistent across tasks
-- Sensitive to prompt wording
+- Sensitive to prompt wording (defer details to Lecture 10)
 - Poor at tasks requiring procedural knowledge
 - Can't update internal knowledge
 
-**Visualizations:**
-
-- Attention patterns during few-shot learning
-- Performance vs number of examples
-- Comparison: ICL vs fine-tuning curves
+**Format:** Diagrams, markdown tables comparing theories, minimal or no code
 
 ---
 
-### 4. Emergent Reasoning Capabilities (30-35 min)
+### 4. Emergent Reasoning Capabilities (25-30 min)
+
+**Style:** Showcase concrete examples of reasoning, discuss what works and what fails
 
 **Topics:**
 
 #### **Mathematical Reasoning**
 
-**Arithmetic:**
+**Show example problems and model outputs:**
 
-- Small models: fail on basic addition
-- Medium models: single-step arithmetic
-- Large models: multi-digit arithmetic, word problems
-
-**GSM8K benchmark (grade school math):**
-
-- 8,000 math word problems
-- Requires multi-step reasoning
-- **Performance by scale:**
+- Simple arithmetic → complex word problems
+- GSM8K benchmark examples with model responses
+- **Performance by scale (table from published results):**
   - GPT-2 (1.5B): ~0% accuracy
   - GPT-3 (175B): ~35% accuracy
   - PaLM (540B): ~56% accuracy
   - GPT-4: ~92% accuracy
-- Sharp emergence around 100B parameters
-
-**Code example:** Test models on math problems, show scaling
+- Discussion: Sharp emergence around 100B parameters
 
 #### **Logical Reasoning**
 
-- Deductive reasoning tasks
-- Syllogisms and logic puzzles
-- When it emerges: >10B parameters, quality improves with scale
-- Still not perfect: failure on complex multi-hop reasoning
+- Deductive reasoning examples
+- Syllogisms: what models get right and wrong
+- Still not perfect: failure cases on complex multi-hop reasoning
 
 #### **Commonsense Reasoning**
 
-- Physical intuition: "If I drop a ball, what happens?"
-- Social reasoning: understanding human behavior
-- Temporal reasoning: before/after relationships
-- **Benchmarks:** PIQA, HellaSwag, WinoGrande
+- Examples: physical intuition, social reasoning, temporal reasoning
+- **Benchmarks:** PIQA, HellaSwag, WinoGrande (brief descriptions)
 - Gradual improvement with scale, not sharp emergence
 
 #### **Code Generation and Understanding**
 
-**Evolution with scale:**
+**Show evolution of code generation quality:**
 
-- Small models: syntax errors, incomplete code
-- Medium models: simple functions, common patterns
-- Large models: complex algorithms, multi-file projects
-- **HumanEval benchmark:**
-  - Codex (12B): ~28% pass@1
-  - GPT-3.5: ~48% pass@1
-  - GPT-4: ~67% pass@1
-
-**What enables code understanding:**
-
-- Code in pretraining data
-- Programming as structured reasoning
-- Compression objective favors generalizable patterns
-
-**Demonstration:** Generate increasingly complex code with different model sizes
+- HumanEval benchmark results (table)
+- Example: same coding problem across different model sizes
+- What enables code understanding (discussion)
 
 #### **Multilingual Capabilities**
 
-**Zero-shot cross-lingual transfer:**
-
-- Trained mostly on English
-- Performs on languages with minimal training data
-- Quality correlates with amount of training data per language
-
-**Translation without parallel data:**
-
-- Not trained on translation pairs
-- Emerges from monolingual text
-- Why it works: shared concepts across languages
-
-**Limitations:**
-
-- English-centric bias
-- Poorer performance on low-resource languages
-- Cultural knowledge gaps
+- Zero-shot cross-lingual transfer examples
+- Translation without parallel data
+- Limitations: English-centric bias, low-resource languages
 
 #### **Instruction Following**
 
-**Evolution:**
+**Before/after examples:**
 
 - Early models: ignore instructions, continue text
-- Larger models: follow simple instructions
-- Largest models: complex multi-step instructions
+- Larger models: follow complex multi-step instructions
 
-**What improved:**
-
-- Understanding task from natural language
-- Differentiating instruction vs content
-- Following constraints and formatting requirements
-
-**Example progression:**
-
-```
-Small model:
-Instruction: "List 3 capitals in Europe"
-Output: "in Europe. The weather is..."
-
-Large model:
-Instruction: "List 3 capitals in Europe"
-Output: "1. Paris, France 2. Berlin, Germany 3. Rome, Italy"
-```
+**Format:** Rich markdown with curated examples, benchmark tables, one optional code cell to display examples interactively
 
 ---
 
-### 5. Measuring Emergence (20-25 min)
+### 5. Measuring Emergence (15-20 min)
+
+**Style:** Critical analysis of benchmarks and metrics
 
 **Topics:**
 
-#### **Standard Benchmarks**
+#### **Standard Benchmarks (overview)**
 
-**MMLU (Massive Multitask Language Understanding):**
+**MMLU:**
 
-- 57 subjects from humanities to STEM
-- Measures breadth of knowledge
-- Clear scaling trends: larger models score higher
-- Sharp improvement around 50-100B parameters
+- What it measures, how it's structured
+- Scaling trends visualization
 
 **BIG-Bench:**
 
-- 200+ diverse tasks
-- Specifically designed to find emergence
-- Some tasks show sharp transitions
-
-**GSM8K, HellaSwag, others:**
-
-- Task-specific benchmarks
-- Show different emergence patterns
+- 200+ diverse tasks designed to find emergence
+- Some show sharp transitions, some don't
 
 #### **Sharp vs Smooth Emergence Debate**
 
-**Sharp emergence view:**
+**Show the controversy:**
 
-- Some capabilities appear suddenly at scale
-- Phase transition analogy
-- Examples: arithmetic, instruction following
+- Original emergence curves (Wei et al.)
+- Critique: "Are Emergent Abilities a Mirage?" (Schaeffer et al.)
+- Resolution: depends on metric choice
 
-**Smooth emergence view:**
-
-- May be artifact of measurement
-- Different metrics show different patterns
-- Emergent = unpredictable, not necessarily sudden
-
-**Recent findings:**
-
-- Choice of metric affects perception of emergence
-- Some "sharp" transitions smooth out with better metrics
-- Some capabilities genuinely appear suddenly
+**Key insight:** Emergence may be partly measurement artifact
 
 #### **Evaluation Challenges**
 
-**Prompt sensitivity:**
+- Prompt sensitivity
+- Contamination concerns
+- Benchmark saturation
 
-- Performance varies with prompt wording
-- Hard to compare across models
-- Need for standardized evaluation
-
-**Contamination:**
-
-- Benchmarks may be in training data
-- Inflates apparent performance
-- Major concern for large web-scraped datasets
-
-**Saturation:**
-
-- Existing benchmarks too easy for largest models
-- Need harder benchmarks
-- Moving target problem
-
-**Code demo:** Run same model on benchmark with different prompts, show variance
+**Format:** Reproduced figures from papers, discussion questions
 
 ---
 
 ### 6. What Doesn't Emerge (15-20 min)
+
+**Style:** Critical examination with failure examples
 
 **Topics:**
 
@@ -331,48 +236,44 @@ Output: "1. Paris, France 2. Berlin, Germany 3. Rome, Italy"
 
 **Factual accuracy:**
 
-- Models still hallucinate
+- Hallucination examples
 - Don't improve monotonically with scale
-- Need external knowledge sources
 
 **Consistency:**
 
-- Can contradict themselves
+- Examples of self-contradiction
 - Context-dependent responses
-- No stable "beliefs"
 
 **Planning and long-horizon reasoning:**
 
-- Multi-step plans often fail
-- Lose track in long reasoning chains
-- Sequential errors accumulate
+- Multi-step plan failures
+- Where reasoning chains break down
 
 **Calibration:**
 
-- Overconfident on wrong answers
+- Overconfident wrong answers
 - Poor uncertainty estimates
-- Doesn't improve proportionally with scale
 
 #### **Inverse Scaling**
 
 - Some tasks get WORSE with scale
-- Examples:
-  - Repetitive tasks (models generate too much)
-  - Sycophancy (agree with user even when wrong)
+- **Examples:**
+  - Sycophancy (agreeing with incorrect premises)
   - Certain reasoning traps
 - **Why:** Larger models better at pattern matching, including problematic patterns
 
 #### **U-Shaped Scaling Curves**
 
 - Performance improves, then degrades, then improves again
-- Medium models worst at some tasks
-- Hypothesis: insufficient capacity to overcome misleading patterns
+- Examples and explanations
 
-**Visualization:** Show inverse scaling and U-shaped curves on specific tasks
+**Format:** Tables of failure cases, discussion of why these persist
 
 ---
 
 ### 7. Theories of Why Emergence Happens (15-20 min)
+
+**Style:** Philosophical discussion of competing explanations
 
 **Topics:**
 
@@ -380,63 +281,54 @@ Output: "1. Paris, France 2. Berlin, Germany 3. Rome, Italy"
 
 - Next-token prediction requires world model
 - Compression favors generalizable patterns
-- Larger models = better compression = better world models
+- Discussion: Is this sufficient explanation?
 
 #### **Circuit Formation**
 
-- Neural networks form specialized "circuits" for subtasks
-- Larger models have more circuits
-- Composition of circuits enables complex behaviors
+- Neural networks form specialized "circuits"
+- Composition enables complex behaviors
+- Connection to interpretability research
 
 #### **Grokking at Scale**
 
-- Models may "grok" (suddenly understand) at scale
+- Sudden understanding after extended training
 - Transition from memorization to generalization
-- Similar to small model grokking, but at larger scale
-
-#### **Emergent Optimization**
-
-- Transformers can implement optimization algorithms
-- ICL as learned optimization
-- Enables adaptation without gradients
 
 #### **The Scaling Hypothesis**
 
-- Intelligence may be primarily about scale
-- Architecture and training objective matter less
-- Controversial: some argue fundamentally new ideas needed
+- Is intelligence primarily about scale?
+- Arguments for and against
+- What's missing from pure scaling?
 
-**Discussion:** Is scale enough? What's missing?
+**Discussion questions:** Is scale sufficient? What architectural innovations might help?
+
+**Format:** Conceptual markdown, no code
 
 ---
 
 ### 8. Implications and Future Directions (10-15 min)
 
+**Style:** Forward-looking discussion
+
 **Topics:**
 
 #### **For AI Development**
 
-- Bigger models likely more capable
-- But: diminishing returns, efficiency concerns
-- Need: better evaluation, safety research
+- Bigger models likely more capable, but diminishing returns
+- Efficiency concerns and alternatives to pure scaling
 
 #### **For AI Safety**
 
 - Unpredictable capabilities complicate safety
-- Need to anticipate what emerges
-- Alignment becomes more critical (Lecture 8 preview)
-
-#### **For Applications**
-
-- Generalist models vs specialist models
-- When to use LLMs vs fine-tuned models
-- Cost-benefit of scale
+- Preview of Lecture 8: Why alignment matters
 
 #### **Open Questions**
 
 - Will emergence continue indefinitely?
 - What capabilities remain out of reach?
 - Can we predict emergence before building?
+
+**Format:** Discussion-oriented, no code
 
 ---
 

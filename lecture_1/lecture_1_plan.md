@@ -1,450 +1,309 @@
-# Lecture 1: Introduction to AI and ML (NLP-Focused)
+# Lecture 1: Introduction to ML for Language
 
 ## Course Information
 
-**Duration:** 2-2.5 hours  
-**Prerequisites:** Basic programming (Python), linear algebra, probability  
+**Duration:** 60-75 minutes
+**Prerequisites:** Basic Python programming
 **Next Lecture:** Neural Networks for NLP
 
 ---
 
 ## Lecture Outline
 
-### 1. Motivation: AI and ML for Language (10-15 min)
+### 1. Motivation: Why ML for Language? (5 min)
 
 **Topics:**
 
-- What is AI vs ML vs NLP?
-- **Language understanding challenges:**
-  - Ambiguity, context, semantics
-  - Why language is hard for computers
-- **Success stories:**
-  - Machine translation (Google Translate)
-  - Chatbots and assistants (ChatGPT, Claude)
-  - Sentiment analysis for business
-  - Text summarization
-- Course roadmap with NLP focus
+- **Success stories:** ChatGPT, translation, sentiment analysis
+- **This lecture:** Build two models from scratch
+  - Text classifier (sentiment/spam detection)
+  - Language model (predicting next words)
+- Course roadmap: From simple models → transformers → LLMs
 
 ---
 
-### 2. Problem Formulation in ML (15-20 min)
+### 2. Essential Libraries (10 min)
 
 **Topics:**
 
-- Formal definition with NLP context
-- **Key notation:**
-  - Input space $\mathcal{X}$ (text documents, sentences, words)
-  - Output space $\mathcal{Y}$ (labels, translations, sentiment)
-  - Training examples $(x^{(i)}, y^{(i)})$
-  - Hypothesis $h: \mathcal{X} \to \mathcal{Y}$
-- **Concrete NLP example:** Spam email classification
-  - Input: email text
-  - Output: {spam, not spam}
-  - What does "learning" mean here?
+- **NumPy:** Arrays and numerical operations
+- **scikit-learn:** ML models and datasets
+- **Collections:** Counting and dictionaries
+- **Code examples:** 2-3 line cells showing each library
+
+**Demonstrations:**
+
+- Load text data
+- Basic array operations
+- Simple text processing
 
 ---
 
-### 3. Core ML Terminology with Text Data (20-25 min)
+### 3. Problem Setup: What is ML? (5 min)
 
 **Topics:**
 
-- **Features in NLP:**
-  - Word counts, n-grams, TF-IDF (preview)
-  - Example: representing "I love this movie" as features
-- **Labels:**
-  - Sentiment (positive/negative)
-  - Named entity tags
-  - Next word in sequence
+- **Input → Output:** Text → Label
+- **Example:** "I love this movie!" → positive sentiment
+- **Learning:** Find patterns in training data
 - **Dataset splits:**
-  - Training: learn patterns in text
-  - Validation: tune model hyperparameters
-  - Test: final evaluation
-- **Code example:** Split IMDB movie reviews dataset
-- Why this matters for language models (foreshadowing)
+  - Training: learn patterns
+  - Test: evaluate on unseen data
 
 ---
 
-### 4. Learning Paradigms with NLP Examples (25-30 min)
-
-#### **Supervised Learning**
-
-**Text Classification**
-
-- Example: Sentiment analysis
-- Labels: {positive, negative, neutral}
-- Code: Logistic regression on movie reviews
-
-**Sequence Labeling**
-
-- Example: Named Entity Recognition (NER)
-- Input: "Apple Inc. is located in California"
-- Output: [B-ORG, I-ORG, O, O, O, B-LOC]
-
-**Sequence-to-Sequence**
-
-- Example: Machine translation
-- Preview: this leads to transformers (Lecture 5)
-
-#### **Unsupervised Learning**
-
-**Topic Modeling**
-
-- Discovering themes in document collections
-- Example: clustering news articles
-
-**Language Modeling**
-
-- Learning text patterns without explicit labels
-- Preview: this is foundation of LLMs (Lecture 6)
-
-#### **Reinforcement Learning**
-
-- Brief mention: RLHF for aligning LLMs
-- We'll see this concept later in the course
-
----
-
-### 5. Generalization in NLP (20-25 min)
+### 4. Hands-On: Text Classification (20-25 min)
 
 **Topics:**
 
-- **Overfitting in text models:**
-  - Memorizing training sentences verbatim
-  - Not generalizing to new phrasings
-  - **Example:** Model that only works on training vocabulary
-- **Underfitting:**
-  - Bag-of-words model missing word order
-  - Too simple representations
-- **Demonstration:**
-  - Train text classifier with increasing model complexity
-  - Show overfitting on small text dataset
-  - Learning curves with text data
-- **Connection to LLMs:**
-  - Why we need massive datasets (Lecture 7)
-  - Test set contamination concerns
+#### **Load and Explore Data**
+
+- SMS spam dataset (2-3 line load)
+- Look at examples (2-3 line display)
+- Check class balance (2-3 line visualization)
+
+#### **Convert Text to Numbers**
+
+- Bag-of-words: count word occurrences
+- Code: 2-3 lines using CountVectorizer
+- Visualize: sparse matrix shape
+
+#### **Train a Classifier**
+
+- Logistic regression on word counts
+- Code: 2-3 lines (vectorize, fit, predict)
+- Show predictions on test examples
+
+#### **Evaluate Performance**
+
+- Accuracy metric
+- Confusion matrix (2-3 line visualization)
+- Look at errors: what did model get wrong?
+
+#### **Demonstrate Overfitting**
+
+- Train with 1-grams, 2-grams, 3-grams
+- Plot: training vs test accuracy
+- Show: complex models memorize training data
 
 ---
 
-### 6. Evaluation Metrics for NLP (20-25 min)
-
-#### **For Text Classification:**
-
-- Accuracy, Precision, Recall, F1
-- **Example:** Sentiment analysis confusion matrix
-- When accuracy misleads (imbalanced classes)
-
-#### **For Sequence Tasks:**
-
-- **Token-level accuracy** (NER, POS tagging)
-- **BLEU score** (machine translation preview)
-- **Perplexity** (language models - introduced later this lecture)
-
-#### **For Generation:**
-
-- Brief mention: ROUGE, human evaluation
-- More in later lectures
-
----
-
-### 7. N-gram Language Models and Their Limitations (20-25 min)
+### 5. Hands-On: Simple Language Model (20-25 min)
 
 **Topics:**
 
-#### **What is a language model?**
+#### **What is a Language Model?**
 
-- Assigns probability to sequences of words
-- Formal definition: $P(w_1, w_2, ..., w_n)$
-- Applications: speech recognition, machine translation, text generation
+- Predicts next word: P(word | previous words)
+- Example: "I love ___" → high P(this), low P(banana)
+- Application: text generation, autocomplete
 
-#### **Probability of sequences:**
+#### **Build a Bigram Model**
 
-- Chain rule: $P(w_1, ..., w_n) = \prod_{i=1}^{n} P(w_i | w_1, ..., w_{i-1})$
-- Problem: too many possible histories
+- Count word pairs from corpus
+- Code: 2-3 lines to build counts dictionary
+- Normalize to get probabilities
 
-#### **N-gram approximation:**
+#### **Generate Text**
 
-- Markov assumption: only look at last n-1 words
-- Unigram: $P(w_i)$
-- Bigram: $P(w_i | w_{i-1})$
-- Trigram: $P(w_i | w_{i-2}, w_{i-1})$
+- Start with a word
+- Sample next word from bigram probabilities
+- Code: 2-3 line sampling loop
+- Show: generated sentences (often nonsensical!)
 
-#### **Estimating probabilities:**
+#### **Evaluate with Perplexity**
 
-- Maximum likelihood estimation from corpus
-- Count and normalize: $P(w_i | w_{i-1}) = \frac{C(w_{i-1}, w_i)}{C(w_{i-1})}$
-- **Code example:** Build bigram model on text corpus
+- Perplexity: how "surprised" is model?
+- Formula: $PP = P(w_1,...,w_n)^{-1/n}$
+- Code: 2-3 lines to compute
+- Lower perplexity = better predictions
 
-#### **Evaluating with Perplexity:**
+#### **Fundamental Limitations**
 
-- Intuition: how "surprised" is the model?
-- Definition: $PP(W) = P(w_1, ..., w_N)^{-1/N}$
-- Lower perplexity = better model
-- Standard metric for all language models (including LLMs)
-
-#### **Fundamental Limitations:**
-
-- **Sparsity:** zero counts for unseen n-grams
+- **Sparsity:** Unseen word pairs get zero probability
+- **No context:** Can't use information beyond 1 word back
 - **No generalization:** "cat sat" and "dog sat" are unrelated
-- **No long-range dependencies:** can't capture context beyond n-1 words
-- **Storage:** need to store all n-gram counts
-- Smoothing helps but doesn't solve the core problem
+- **Demonstration:** Show failure cases
 
-**Bridge:** These limitations motivate neural approaches
+**Bridge:** Neural networks solve these problems (next lecture)
 
 ---
 
-### 8. NLP-Specific Challenges Preview (10-15 min)
+### 6. Evaluation and Metrics (5-10 min)
 
 **Topics:**
 
-- **Representing text numerically**
-  - Words → vectors (embeddings in Lecture 2)
-  - Tokenization challenges (Lecture 3)
-- **Variable-length sequences**
-  - Sentences have different lengths
-  - How do we handle this? (Neural networks - Lecture 2)
-- **Context and meaning**
-  - "I'm feeling blue" vs "The sky is blue"
-  - Preview: Transformers and attention (Lecture 4-5)
-- **Scale and data**
-  - Modern LLMs trained on trillions of tokens
-  - Preview: Scaling laws (Lecture 6)
+- **Classification:** Accuracy, precision, recall
+- **Language models:** Perplexity
+- **When metrics mislead:**
+  - Imbalanced classes → accuracy looks good but model is bad
+  - Example with spam dataset
 
 ---
 
-### 9. Practical NLP Workflow (10 min)
-
-**Steps:**
-
-1. Define NLP task (classification, generation, etc.)
-2. Collect and explore text data
-3. Text preprocessing and tokenization
-4. Feature extraction or embeddings
-5. Split data (careful with time-based data)
-6. Choose model
-7. Train and validate
-8. Evaluate on test set
-9. Error analysis (look at misclassified examples)
-
-**Common pitfalls in NLP:**
-
-- Data leakage in text
-- Test set contamination (big issue for LLMs)
-- Vocabulary mismatch
-
----
-
-### 10. Summary and Bridge to Next Lecture (5 min)
+### 7. Summary and Next Steps (5 min)
 
 **Key Takeaways:**
 
-- ML fundamentals apply to NLP
-- Text brings unique challenges
-- N-gram models show the need for better representations
-- **Next lecture:** Neural networks that can learn representations from data
+- ML learns patterns from (text, label) pairs
+- Classification: convert text → numbers → predict label
+- Language modeling: learn P(next word | context)
+- Limitations: sparse features, no generalization, limited context
+
+**Next lecture:** Neural networks learn better text representations
 
 ---
 
 ## Supporting Materials
 
-### Code Examples (all with text data)
+### Code Structure: Every Cell is 2-3 Lines
 
-1. **Load and explore a text dataset**
-   - IMDB movie reviews
-   - AG News articles
-   - SMS spam dataset
-   - Basic statistics: vocabulary size, document lengths, class distribution
+**Critical principle:** Each code cell demonstrates ONE concept in 2-3 meaningful lines.
 
-2. **Train/test split for text classification**
-   - Proper splitting for text data
-   - Stratified splits to maintain class balance
-   - Handling time-based data
+**Examples:**
 
-3. **Simple bag-of-words classifier**
-   - CountVectorizer and TfidfVectorizer
-   - Logistic regression on text features
-   - Compare different feature representations
+```python
+# Load data (2 lines)
+from sklearn.datasets import fetch_20newsgroups
+data = fetch_20newsgroups(subset='train', categories=['alt.atheism', 'soc.religion.christian'])
+```
 
-4. **Visualize overfitting on text data**
-   - Train models with varying complexity
-   - Plot training vs validation curves
-   - Show effect of vocabulary size on overfitting
+```python
+# Vectorize text (2 lines)
+from sklearn.feature_extraction.text import CountVectorizer
+X = CountVectorizer().fit_transform(data.data)
+```
 
-5. **Compute NLP metrics**
-   - Classification report for sentiment analysis
-   - Confusion matrix visualization
-   - Precision-recall curves
+```python
+# Train and evaluate (3 lines)
+from sklearn.linear_model import LogisticRegression
+model = LogisticRegression(max_iter=1000).fit(X[:800], data.target[:800])
+print(f"Accuracy: {model.score(X[800:], data.target[800:]):.2f}")
+```
 
-6. **N-gram language model**
-   - Build bigram/trigram model from corpus
-   - Compute perplexity on test set
-   - Generate sample text (show limitations)
-   - Demonstrate sparsity problem with unseen n-grams
+### Notebook Sections
 
-### Mathematical Derivations
+#### **Section 1: Library Basics (3-4 cells)**
 
-1. **Cross-entropy loss for classification**
-   - Binary cross-entropy: $L = -\frac{1}{n}\sum_{i=1}^{n}[y^{(i)}\log(\hat{y}^{(i)}) + (1-y^{(i)})\log(1-\hat{y}^{(i)})]$
-   - Multi-class cross-entropy
-   - Why this is used in all language models
+- Import numpy, show array creation (2 lines)
+- Import sklearn, load sample text data (2 lines)
+- Import collections, demonstrate Counter (2 lines)
+- Show data shape and first examples (2 lines)
 
-2. **Empirical Risk Minimization**
-   - Loss function: $L(h) = \frac{1}{n}\sum_{i=1}^{n}\ell(h(x^{(i)}), y^{(i)})$
-   - Connection to maximum likelihood estimation
-   - Why log probability matters for language modeling
+#### **Section 2: Text Classification (8-10 cells)**
 
-3. **Bias-Variance Decomposition**
-   - Expected test error = Bias² + Variance + Irreducible Error
-   - Intuition in context of text classification
+1. Load SMS spam dataset (2 lines)
+2. Display sample messages (2 lines)
+3. Check class distribution (2 lines + plot)
+4. Convert text to bag-of-words (2 lines)
+5. Print matrix shape (1 line)
+6. Train logistic regression (2 lines)
+7. Predict on test set (2 lines)
+8. Show confusion matrix (2-3 lines)
+9. Demonstrate overfitting: train with different n-gram sizes (3 lines per model)
+10. Plot training vs test curves (3 lines)
 
-4. **N-gram probability estimation**
-   - MLE: $\hat{P}(w_i | w_{i-1}) = \frac{C(w_{i-1}, w_i)}{C(w_{i-1})}$
-   - Why this is maximum likelihood
-   - Add-one smoothing derivation
+#### **Section 3: Language Model (8-10 cells)**
 
-5. **Perplexity derivation**
-   - From cross-entropy to perplexity
-   - Connection to bits per word
-   - Why geometric mean
+1. Load simple text corpus (2 lines)
+2. Build bigram counts with Counter (3 lines)
+3. Show top bigrams (2 lines)
+4. Convert counts to probabilities (2-3 lines)
+5. Sample next word given context (2-3 lines)
+6. Generate sequence with loop (3 lines)
+7. Show generated examples (1 line)
+8. Compute perplexity on test (3 lines)
+9. Demonstrate failure: unseen bigram → zero probability (2 lines)
 
-### Visualizations
+#### **Section 4: Evaluation (3-4 cells)**
 
-1. **Text dataset statistics**
-   - Vocabulary size distribution
-   - Document length distribution (histogram)
-   - Class balance (bar chart)
-   - Word frequency plots (Zipf's law preview)
+1. Classification metrics from sklearn (2 lines)
+2. Show imbalanced dataset problem (3 lines)
+3. Perplexity formula and computation (2-3 lines)
 
-2. **Confusion matrix for sentiment analysis**
-   - Heatmap showing true vs predicted labels
-   - Identify common error patterns
+### Datasets
 
-3. **Learning curves showing overfitting on text**
-   - Training accuracy vs validation accuracy
-   - Effect of training set size
-   - Effect of model complexity (n-gram size)
+**Primary dataset: SMS Spam Collection**
 
-4. **Word cloud of most informative features**
-   - Positive sentiment words
-   - Negative sentiment words
-   - Most discriminative features for classification
+- ~5,500 text messages
+- Binary labels (spam/ham)
+- Small enough to show overfitting clearly
+- Load programmatically (no files needed)
 
-5. **Feature representation comparison**
-   - Sparse vs dense representations
-   - Bag-of-words vs TF-IDF visualization
+**For language model: Simple text corpus**
 
-6. **N-gram probability distributions**
-   - Bar charts of word probabilities given context
-   - Compare unigram vs bigram distributions
-   - Show sparsity in count tables
+- WikiText sample or similar
+- Or use SMS data itself
+- Just need raw text for bigram counts
 
-### Datasets to Use
+### Visualizations (3-4 total)
 
-1. **IMDB Movie Reviews**
-   - 50,000 reviews (25k train, 25k test)
-   - Binary sentiment classification
-   - Good for demonstrating overfitting
+1. **Class balance bar chart** (2 lines: value_counts + plot)
+2. **Confusion matrix heatmap** (3 lines: compute, plot, labels)
+3. **Overfitting curve** (3 lines: collect scores, plot train vs test)
+4. **Bigram probability distribution** (3 lines: top 10 bigrams as bar chart)
 
-2. **AG News**
-   - 120,000 news articles
-   - 4 classes (World, Sports, Business, Sci/Tech)
-   - Multi-class classification example
+### Mathematical Content (Minimal)
 
-3. **SMS Spam Collection**
-   - ~5,500 messages
-   - Binary classification (spam/ham)
-   - Small dataset good for showing overfitting
+**Only include formulas directly connected to code:**
 
-4. **20 Newsgroups** (optional)
-   - Topic classification
-   - Shows importance of vocabulary
+1. **Bigram probability:** $P(w_i | w_{i-1}) = \frac{C(w_{i-1}, w_i)}{C(w_{i-1})}$
+   - Show formula, then implement in 2-3 lines
+
+2. **Perplexity:** $PP = P(w_1,...,w_n)^{-1/n}$
+   - Show formula, then compute in 2-3 lines
+
+3. **No derivations** - just formulas needed for implementation
 
 ### Student Exercises
 
-#### Exercise 1: Build a spam classifier
+#### **Exercise 1: Modify the classifier (10 min)**
 
-- Load SMS spam dataset
-- Split into train/validation/test
-- Extract features (bag-of-words)
-- Train logistic regression
-- Evaluate with precision, recall, F1
-- Analyze misclassified examples
+- Change from 1-grams to 2-grams
+- Compare accuracy
+- Explain why it changed
 
-#### Exercise 2: Analyze errors in sentiment prediction
+#### **Exercise 2: Improve the language model (10 min)**
 
-- Train sentiment classifier on IMDB
-- Find examples where model fails
-- Categorize types of errors:
-  - Sarcasm
-  - Negation
-  - Context dependency
-- Suggest improvements
+- Build trigram model instead of bigram
+- Generate text and compare quality
+- Compute perplexity - did it improve?
 
-#### Exercise 3: Compare bag-of-words vs more complex features
+#### **Exercise 3: Error analysis (10 min)**
 
-- Implement unigrams, bigrams, trigrams
-- Compare performance
-- Plot learning curves
-- Show overfitting with complex features on small data
+- Find 5 misclassified spam messages
+- Read them - why did model fail?
+- Suggest one feature that could help
 
-#### Exercise 4: Dataset split investigation
+### Recommended Reading (Simplified)
 
-- Implement different splitting strategies
-- Random split
-- Time-based split (if applicable)
-- Stratified split
-- Compare impact on evaluation
+1. **Jurafsky & Martin, Ch. 3** - N-gram Language Models
+   - Just section 3.1-3.3 (first 10 pages)
 
-### Recommended Reading
+2. **Jurafsky & Martin, Ch. 4** - Naive Bayes Classification
+   - Just section 4.1-4.2 (basic classifier)
 
-#### Foundational Papers
+3. **Scikit-learn text tutorial**
+   - Working with text data guide
 
-1. **"A Few Useful Things to Know About Machine Learning"** - Pedro Domingos (2012)
-   - Excellent overview of ML fundamentals
-   - Common pitfalls and practical wisdom
+### Teaching Notes
 
-2. **"Natural Language Processing (almost) from Scratch"** - Collobert et al. (2011)
-   - Early deep learning for NLP
-   - Shows evolution of the field
+**Live coding approach:**
 
-#### Textbooks
+- Type each 2-3 line cell live during lecture
+- Run immediately to show output
+- Ask students: "What do you expect to see?"
+- Discuss the output before moving to next cell
 
-1. **"Speech and Language Processing"** - Jurafsky & Martin (3rd ed.)
-   - Chapter 2: Regular Expressions, Text Normalization, Edit Distance
-   - Chapter 3: N-gram Language Models
-   - Chapter 4: Naive Bayes and Sentiment Classification
+**Common discussion points per cell:**
 
-2. **"Introduction to Information Retrieval"** - Manning, Raghavan & Schütze
-   - Chapter 13: Text Classification and Naive Bayes
+- "Why did we get this shape?"
+- "What does this number mean?"
+- "What happens if we change this parameter?"
+- "Where might this model fail?"
 
-3. **"Pattern Recognition and Machine Learning"** - Christopher Bishop
-   - Chapter 1: Introduction (ML fundamentals)
+**Pacing:**
 
-#### Online Resources
-
-1. **Stanford CS229 Lecture Notes**
-   - Supervised Learning section
-   - Bias-variance tradeoff
-
-2. **Stanford CS224N Lecture 1**
-   - Introduction to NLP and Deep Learning
-
-3. **Scikit-learn Documentation**
-   - Text feature extraction
-   - Model evaluation metrics
-
-### Additional Materials
-
-#### Slide Deck Suggestions
-
-- Use concrete examples throughout
-- Include live coding demonstrations
-- Show failure cases (overfitting, poor features)
-- Interactive polls: "What metric should we use here?"
-
-#### Lab/Tutorial Session
-
-- Jupyter notebook walkthrough
-- Students implement spam classifier step-by-step
-- Instructor demonstrates common errors
-- Q&A on concepts
+- Spend 2-3 minutes per code cell
+- Show, run, discuss, move on
+- Don't let any cell take >5 minutes
